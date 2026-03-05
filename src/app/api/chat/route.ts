@@ -3,7 +3,7 @@ import { backendPost } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.FASTAPI_URL || "http://localhost:8000";
+const BACKEND_URL = (process.env.FASTAPI_URL || "http://localhost:8000").replace(/\/+$/, "");
 const BACKEND_TOKEN = process.env.FASTAPI_TOKEN || "fake_token_for_local_dev";
 
 export async function POST(request: NextRequest) {
