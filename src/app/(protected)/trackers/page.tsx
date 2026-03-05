@@ -105,7 +105,7 @@ export default function TrackersPage() {
   const fetchTrackers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/trackers");
+      const res = await fetch("/api/proxy/admin/trackers");
       const data = await res.json();
       if (Array.isArray(data)) setTrackers(data);
     } catch {
@@ -123,7 +123,7 @@ export default function TrackersPage() {
     setSelectedTracker(tracker);
     setResultsLoading(true);
     try {
-      const res = await fetch(`/api/trackers/${tracker.id}/results`);
+      const res = await fetch(`/api/proxy/admin/trackers/${tracker.id}/results`);
       const data = await res.json();
       if (Array.isArray(data)) setResults(data);
       else setResults([]);

@@ -30,7 +30,7 @@ export default function QueuesPage() {
 
   const fetchQueues = useCallback(async () => {
     try {
-      const res = await fetch("/api/queues");
+      const res = await fetch("/api/proxy/admin/queues");
       const json = await res.json();
       setData(json);
     } catch {

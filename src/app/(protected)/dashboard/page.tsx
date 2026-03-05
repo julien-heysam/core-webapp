@@ -65,7 +65,7 @@ export default function DashboardPage() {
     if (dateRange?.to) params.set("to", dateRange.to.toISOString());
 
     try {
-      const res = await fetch(`/api/dashboard?${params}`);
+      const res = await fetch(`/api/proxy/admin/dashboard?${params}`);
       const json = await res.json();
       setData(json);
     } catch {

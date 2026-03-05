@@ -25,7 +25,7 @@ export function OrgPicker({ value, onChange, className }: OrgPickerProps) {
   const [orgs, setOrgs] = useState<Org[]>([]);
 
   useEffect(() => {
-    fetch("/api/orgs")
+    fetch("/api/proxy/admin/orgs")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setOrgs(data);

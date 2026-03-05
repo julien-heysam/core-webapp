@@ -63,7 +63,7 @@ export default function BotDetailPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/bots/${botId}`)
+    fetch(`/api/proxy/admin/bots/${botId}`)
       .then((res) => res.json())
       .then(setData)
       .catch(() => setData(null))
@@ -121,7 +121,7 @@ export default function BotDetailPage() {
     setSheetOpen(true);
     setTaskResultLoading(true);
     try {
-      const res = await fetch(`/api/bots/${botId}/tasks/${taskName}/result`);
+      const res = await fetch(`/api/proxy/admin/bots/${botId}/tasks/${taskName}/result`);
       const json = await res.json();
       if (res.ok) {
         setTaskResult(json.result);

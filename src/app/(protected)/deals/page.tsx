@@ -106,7 +106,7 @@ function DealsPageInner() {
     params.set("limit", String(LIMIT));
     params.set("offset", String(filters.offset));
 
-    fetch(`/api/deals?${params}`)
+    fetch(`/api/proxy/admin/deals?${params}`)
       .then((res) => res.json())
       .then((data) => {
         if (id !== fetchIdRef.current) return; // stale response — discard
@@ -142,7 +142,7 @@ function DealsPageInner() {
   async function openDetail(dealId: string) {
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/deals/${dealId}`);
+      const res = await fetch(`/api/proxy/admin/deals/${dealId}`);
       const data = await res.json();
       setSelectedDeal(data);
     } catch {

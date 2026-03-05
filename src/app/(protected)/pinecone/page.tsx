@@ -68,7 +68,7 @@ export default function PineconePage() {
   const [sort, setSort] = useState<SortState>({ column: null, direction: null });
 
   useEffect(() => {
-    fetch("/api/pinecone/namespaces")
+    fetch("/api/proxy/admin/pinecone/namespaces")
       .then((res) => res.json())
       .then(setNamespaces)
       .catch(() => setNamespaces([]));
@@ -97,7 +97,7 @@ export default function PineconePage() {
         }
       }
 
-      const res = await fetch("/api/pinecone/query", {
+      const res = await fetch("/api/proxy/admin/pinecone/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

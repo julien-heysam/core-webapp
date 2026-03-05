@@ -84,7 +84,7 @@ export default function BotsPage() {
     params.set("limit", String(LIMIT));
     params.set("offset", String(filters.offset));
 
-    fetch(`/api/bots?${params}`)
+    fetch(`/api/proxy/admin/bots?${params}`)
       .then((res) => res.json())
       .then((data) => {
         if (id !== fetchIdRef.current) return;

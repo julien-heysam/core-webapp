@@ -58,7 +58,7 @@ export default function OrgPage() {
   const [sort, setSort] = useState<SortState>({ column: null, direction: null });
 
   useEffect(() => {
-    fetch("/api/orgs")
+    fetch("/api/proxy/admin/orgs")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setOrgs(data);
@@ -73,7 +73,7 @@ export default function OrgPage() {
   async function openDetail(orgId: string) {
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/orgs/${orgId}`);
+      const res = await fetch(`/api/proxy/admin/orgs/${orgId}`);
       const data = await res.json();
       setSelected(data);
     } catch {

@@ -66,7 +66,7 @@ export default function PostProcessingPage() {
     if (!botId.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/bots/${botId.trim()}`);
+      const res = await fetch(`/api/proxy/admin/bots/${botId.trim()}`);
       if (!res.ok) {
         toast.error("Bot not found");
         setTasks([]);

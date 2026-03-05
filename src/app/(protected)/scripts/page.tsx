@@ -175,7 +175,7 @@ export default function ScriptsPage() {
     }
 
     try {
-      const res = await fetch("/api/scripts/run", {
+      const res = await fetch("/api/proxy/admin/scripts/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ script: script.file, args }),
