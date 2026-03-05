@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const FASTAPI_URL = process.env.FASTAPI_URL || "http://localhost:8000";
 const FASTAPI_TOKEN = process.env.FASTAPI_TOKEN || "fake_token_for_local_dev";
 

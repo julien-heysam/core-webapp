@@ -9,7 +9,7 @@ function headers(): Record<string, string> {
 }
 
 export async function backendGet(path: string): Promise<Response> {
-  return fetch(`${BACKEND_URL}${path}`, { headers: headers() });
+  return fetch(`${BACKEND_URL}${path}`, { headers: headers(), cache: "no-store" });
 }
 
 export async function backendPost(path: string, body: unknown): Promise<Response> {
@@ -17,5 +17,6 @@ export async function backendPost(path: string, body: unknown): Promise<Response
     method: "POST",
     headers: headers(),
     body: JSON.stringify(body),
+    cache: "no-store",
   });
 }
