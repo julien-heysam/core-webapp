@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -50,6 +50,9 @@ interface CeleryData {
   queue_depths: Record<string, number>;
   task_throughput: { timestamp: number; value: number }[];
   task_failures: { timestamp: number; value: number }[];
+  cpu: { timestamp: number; value: number }[];
+  memory: { timestamp: number; value: number }[];
+  keys_configured?: boolean;
   workers: {
     active_count: number;
     workers: { name: string; active_tasks: number }[];
@@ -136,6 +139,27 @@ export default function CeleryMonitoringPage() {
     : [];
 
   const totalQueued = queueData.reduce((sum, q) => sum + q.depth, 0);
+
+  const cpuMemChartData = useMemo(() => {
+    const cpu = data?.cpu ?? [];
+    const memory = data?.memory ?? [];
+    if (cpu.length === 0 && memory.length === 0) return [];
+    const tsSet = new Set([
+      ...cpu.map((p) => p.timestamp),
+      ...memory.map((p) => p.timestamp),
+    ]);
+    return [...tsSet]
+      .sort((a, b) => a - b)
+      .map((ts) => {
+        const cpuPt = cpu.find((p) => p.timestamp === ts);
+        const memPt = memory.find((p) => p.timestamp === ts);
+        return {
+          timestamp: ts,
+          cpu: cpuPt?.value ?? 0,
+          memory: memPt?.value ?? 0,
+        };
+      });
+  }, [data?.cpu, data?.memory]);
 
   return (
     <div className="space-y-6">
@@ -241,6 +265,71 @@ export default function CeleryMonitoringPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Celery CPU & Memory */}
+      <Card>
+        <CardHeader>
+          <CardTitle>CPU & Memory Utilization</CardTitle>
+          <CardDescription>
+            Celery worker container resource usage over time
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {cpuMemChartData.length > 0 ? (
+            <div className="h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={cpuMemChartData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke={GRID_STROKE}
+                  />
+                  <XAxis
+                    dataKey="timestamp"
+                    tickFormatter={formatTime}
+                    tick={AXIS_TICK}
+                    axisLine={AXIS_LINE}
+                    tickLine={AXIS_LINE}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    unit="%"
+                    tick={AXIS_TICK}
+                    axisLine={AXIS_LINE}
+                    tickLine={AXIS_LINE}
+                  />
+                  <Tooltip
+                    labelFormatter={(v) => formatTime(v as number)}
+                    contentStyle={TOOLTIP_STYLE}
+                    labelStyle={{ color: "#e2e8f0" }}
+                  />
+                  <Line
+                    dataKey="cpu"
+                    name="CPU %"
+                    stroke="#818cf8"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                  <Line
+                    dataKey="memory"
+                    name="Memory %"
+                    stroke="#34d399"
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState
+              message={
+                !data?.keys_configured
+                  ? "Configure DD_API_KEY and DD_APP_KEY to fetch Celery CPU/memory metrics."
+                  : "No CPU/memory data — Celery worker needs Datadog agent sidecar (ECS)."
+              }
+            />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Queue depths bar chart */}
       <Card>

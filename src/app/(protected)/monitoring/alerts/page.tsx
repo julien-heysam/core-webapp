@@ -98,6 +98,7 @@ function EmptyState({ message }: { message: string }) {
 export default function AlertsPage() {
   const [data, setData] = useState<AlertData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -114,9 +115,11 @@ export default function AlertsPage() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, [fetchData]);
+    if (autoRefresh) {
+      const interval = setInterval(fetchData, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [fetchData, autoRefresh]);
 
   const okCount =
     data?.monitors?.filter((m) => m.status === "OK").length ?? 0;
@@ -136,6 +139,13 @@ export default function AlertsPage() {
             Datadog monitor status and alert configuration
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setAutoRefresh(!autoRefresh)}
+        >
+          {autoRefresh ? "Pause" : "Resume"}
+        </Button>
         <Button
           variant="outline"
           size="icon"

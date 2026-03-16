@@ -53,6 +53,9 @@ interface InfraData {
   keys_configured?: boolean;
   dd_error?: string;
   service_tag?: string;
+  ecs_metric_filter?: string;
+  dd_api_key_set?: boolean;
+  dd_app_key_set?: boolean;
 }
 
 const TOOLTIP_STYLE = {
@@ -234,10 +237,10 @@ export default function MonitoringPage() {
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {!data?.keys_configured
-                  ? "Add DD_API_KEY and DD_APP_KEY to your backend .env (or ECS task secrets)."
-                  : data.service_tag
-                    ? `Query uses ${data.service_tag}. Ensure ECS tasks have matching DD_SERVICE.`
-                    : "Check Datadog API keys and that metrics are flowing from your ECS tasks."}
+                  ? `Add DD_API_KEY and DD_APP_KEY to project root .env. Restart FastAPI. (API key: ${data?.dd_api_key_set ? "✓" : "✗"}, App key: ${data?.dd_app_key_set ? "✓" : "✗"})`
+                  : data.ecs_metric_filter
+                    ? `CPU/memory query uses ${data.ecs_metric_filter}. Set ECS_SERVICE_NAME if your ECS service name differs.`
+                    : "Check Datadog API keys and that AWS integration has ECS enabled."}
               </p>
             </div>
           </CardContent>
@@ -352,7 +355,9 @@ export default function MonitoringPage() {
                     ? "Configure DD_API_KEY and DD_APP_KEY to fetch CPU/memory metrics."
                     : data?.dd_error
                       ? data.dd_error
-                      : `No CPU/memory data for ${data?.service_tag || "service"}. Ensure ECS tasks have Datadog agent sidecar and DD_SERVICE matches.`
+                      : `No CPU/memory data for ${data?.ecs_metric_filter || data?.service_tag || "service"}. ` +
+                        "AWS ECS metrics use ecs_service_name. Set ECS_SERVICE_NAME to match your ECS service name. " +
+                        "Ensure AWS integration has ECS enabled in Datadog."
                 }
               />
             )}
