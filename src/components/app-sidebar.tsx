@@ -16,6 +16,10 @@ import {
   Zap,
   Timer,
   HardDrive,
+  Activity,
+  Cpu,
+  Brain,
+  Bell,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +44,15 @@ const navGroups = [
       { title: "Queue Monitor", href: "/queues", icon: Layers },
       { title: "Redis Storage", href: "/redis-storage", icon: HardDrive },
       { title: "Trackers", href: "/trackers", icon: Timer },
+    ],
+  },
+  {
+    label: "Monitoring",
+    items: [
+      { title: "Infrastructure", href: "/monitoring", icon: Activity },
+      { title: "Celery Workers", href: "/monitoring/celery", icon: Cpu },
+      { title: "LLM Performance", href: "/monitoring/llm", icon: Brain },
+      { title: "Alerts", href: "/monitoring/alerts", icon: Bell },
     ],
   },
   {

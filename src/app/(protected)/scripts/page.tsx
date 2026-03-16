@@ -125,18 +125,6 @@ const SCRIPTS: ScriptDef[] = [
       { name: "skip_processing", label: "Skip Post-Processing", type: "boolean", default: false },
     ],
   },
-  {
-    id: "sync_deal_stage",
-    name: "Sync Deal Stage",
-    file: "sync_deal_stage.py",
-    description: "Sync a deal's stage from external_deal_stage (by deal_id or deal name + org)",
-    params: [
-      { name: "deal_id", label: "Deal ID", type: "string", placeholder: "uuid..." },
-      { name: "deal_name", label: "Deal Name", type: "string", placeholder: "Acme Corp" },
-      { name: "org_id", label: "Org ID", type: "string", placeholder: "heysam" },
-      { name: "dry_run", label: "Dry Run", type: "boolean", default: true },
-    ],
-  },
 ];
 
 export default function ScriptsPage() {
