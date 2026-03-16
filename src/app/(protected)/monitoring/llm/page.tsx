@@ -421,8 +421,8 @@ export default function LLMMonitoringPage() {
                       tickLine={false}
                     />
                     <Tooltip
-                      formatter={(value: number) => [
-                        value.toLocaleString(),
+                      formatter={(value: number | undefined) => [
+                        (value ?? 0).toLocaleString(),
                         "Calls",
                       ]}
                       contentStyle={{
@@ -484,7 +484,7 @@ export default function LLMMonitoringPage() {
                           textAnchor="middle"
                           dominantBaseline="central"
                         >
-                          {`${name} (${(percent * 100).toFixed(0)}%)`}
+                          {`${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
                         </text>
                       )}
                       labelLine={false}
@@ -497,8 +497,8 @@ export default function LLMMonitoringPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number) => [
-                        formatCost(value),
+                      formatter={(value: number | undefined) => [
+                        formatCost(value ?? 0),
                         "Cost",
                       ]}
                       contentStyle={{
@@ -573,9 +573,9 @@ export default function LLMMonitoringPage() {
                     tickLine={false}
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      formatMs(value),
-                      name,
+                    formatter={(value: number | undefined, name?: string) => [
+                      formatMs(value ?? 0),
+                      name ?? "",
                     ]}
                     contentStyle={{
                       backgroundColor: "#1c1c2e",
@@ -752,9 +752,11 @@ export default function LLMMonitoringPage() {
                     tickLine={{ stroke: "rgba(255,255,255,0.15)" }}
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => {
-                      if (name === "Cost") return [formatCost(value), name];
-                      return [value.toLocaleString(), name];
+                    formatter={(value: number | undefined, name?: string) => {
+                      const v = value ?? 0;
+                      const n = name ?? "";
+                      if (n === "Cost") return [formatCost(v), n];
+                      return [v.toLocaleString(), n];
                     }}
                     contentStyle={{
                       backgroundColor: "#1c1c2e",

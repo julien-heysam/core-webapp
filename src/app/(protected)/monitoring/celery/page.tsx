@@ -268,7 +268,7 @@ export default function CeleryMonitoringPage() {
                   <Tooltip
                     contentStyle={TOOLTIP_STYLE}
                     labelStyle={{ color: "#e2e8f0" }}
-                    formatter={(value: number) => [value, "Pending"]}
+                    formatter={(value: number | undefined) => [value ?? 0, "Pending"]}
                   />
                   <Bar dataKey="depth" radius={[4, 4, 0, 0]}>
                     {queueData.map((_, i) => (
