@@ -50,6 +50,9 @@ interface InfraData {
   request_rate: MetricPoint[];
   error_rate: MetricPoint[];
   error?: string;
+  keys_configured?: boolean;
+  dd_error?: string;
+  service_tag?: string;
 }
 
 const TOOLTIP_STYLE = {
@@ -230,7 +233,11 @@ export default function MonitoringPage() {
                 {data.error}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Check that DD_API_KEY and DD_APP_KEY are configured in your .env
+                {!data?.keys_configured
+                  ? "Add DD_API_KEY and DD_APP_KEY to your backend .env (or ECS task secrets)."
+                  : data.service_tag
+                    ? `Query uses ${data.service_tag}. Ensure ECS tasks have matching DD_SERVICE.`
+                    : "Check Datadog API keys and that metrics are flowing from your ECS tasks."}
               </p>
             </div>
           </CardContent>
@@ -339,7 +346,15 @@ export default function MonitoringPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <EmptyState message="No CPU/memory data available — metrics require a Datadog agent with ECS integration" />
+              <EmptyState
+                message={
+                  !data?.keys_configured
+                    ? "Configure DD_API_KEY and DD_APP_KEY to fetch CPU/memory metrics."
+                    : data?.dd_error
+                      ? data.dd_error
+                      : `No CPU/memory data for ${data?.service_tag || "service"}. Ensure ECS tasks have Datadog agent sidecar and DD_SERVICE matches.`
+                }
+              />
             )}
           </CardContent>
         </Card>
@@ -404,7 +419,15 @@ export default function MonitoringPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <EmptyState message="No request data available — metrics require DogStatsD agent on port 8125" />
+              <EmptyState
+                message={
+                  !data?.keys_configured
+                    ? "Configure DD_API_KEY and DD_APP_KEY to fetch request metrics."
+                    : data?.dd_error
+                      ? data.dd_error
+                      : "No request data — ensure DogStatsD metrics (heysam.http.request.*) are being emitted to the Datadog agent."
+                }
+              />
             )}
           </CardContent>
         </Card>

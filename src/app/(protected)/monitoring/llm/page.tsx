@@ -57,6 +57,8 @@ interface LLMData {
   totals_by_model: Record<string, unknown>[];
   by_agent: Record<string, unknown>[];
   time_range: { from: string; to: string; granularity: string };
+  langfuse_configured?: boolean;
+  langfuse_error?: string;
 }
 
 const CHART_COLORS = [
@@ -160,6 +162,10 @@ export default function LLMMonitoringPage() {
       const json = await res.json();
       if (json.error) {
         setError(json.error);
+      } else if (json.langfuse_error) {
+        setError(json.langfuse_error);
+      } else if (!json.langfuse_configured && !json.totals_by_model?.length) {
+        setError("Configure LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in the backend to see LLM metrics.");
       }
       setData(json);
     } catch (e) {
