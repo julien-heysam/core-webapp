@@ -52,8 +52,7 @@ interface InfraData {
   error?: string;
   keys_configured?: boolean;
   dd_error?: string;
-  service_tag?: string;
-  ecs_metric_filter?: string;
+  dd_resource_key?: string;
   dd_api_key_set?: boolean;
   dd_app_key_set?: boolean;
 }
@@ -238,8 +237,8 @@ export default function MonitoringPage() {
               <p className="text-xs text-muted-foreground mt-0.5">
                 {!data?.keys_configured
                   ? `Add DD_API_KEY and DD_APP_KEY to project root .env. Restart FastAPI. (API key: ${data?.dd_api_key_set ? "✓" : "✗"}, App key: ${data?.dd_app_key_set ? "✓" : "✗"})`
-                  : data.ecs_metric_filter
-                    ? `CPU/memory query uses ${data.ecs_metric_filter}. Set ECS_SERVICE_NAME if your ECS service name differs.`
+                  : data.dd_resource_key
+                    ? `CPU/memory query uses dd_resource_key:${data.dd_resource_key}. Set DD_ECS_RESOURCE_KEY if your ECS resource ARN differs.`
                     : "Check Datadog API keys and that AWS integration has ECS enabled."}
               </p>
             </div>
@@ -355,8 +354,8 @@ export default function MonitoringPage() {
                     ? "Configure DD_API_KEY and DD_APP_KEY to fetch CPU/memory metrics."
                     : data?.dd_error
                       ? data.dd_error
-                      : `No CPU/memory data for ${data?.ecs_metric_filter || data?.service_tag || "service"}. ` +
-                        "AWS ECS metrics use ecs_service_name. Set ECS_SERVICE_NAME to match your ECS service name. " +
+                      : `No CPU/memory data for dd_resource_key:${data?.dd_resource_key || "unknown"}. ` +
+                        "Set DD_ECS_RESOURCE_KEY to match your ECS service ARN. " +
                         "Ensure AWS integration has ECS enabled in Datadog."
                 }
               />

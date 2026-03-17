@@ -324,7 +324,7 @@ export default function CeleryMonitoringPage() {
               message={
                 !data?.keys_configured
                   ? "Configure DD_API_KEY and DD_APP_KEY to fetch Celery CPU/memory metrics."
-                  : "No CPU/memory data — Celery worker needs Datadog agent sidecar (ECS)."
+                  : "No CPU/memory data — set DD_ECS_RESOURCE_KEY to match your ECS service ARN."
               }
             />
           )}
