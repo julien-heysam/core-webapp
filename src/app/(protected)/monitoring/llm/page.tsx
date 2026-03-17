@@ -148,15 +148,14 @@ export default function LLMMonitoringPage() {
   const [error, setError] = useState<string | null>(null);
   const [hours, setHours] = useState("168");
   const [granularity, setGranularity] = useState("hour");
-  const [autoRefresh, setAutoRefresh] = useState(true);
   const isFirstFetch = useRef(true);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceRefresh = false) => {
     if (isFirstFetch.current) setLoading(true);
     setError(null);
     try {
       const res = await fetch(
-        `/api/proxy/admin/monitoring/llm?hours=${hours}&granularity=${granularity}`
+        `/api/proxy/admin/monitoring/llm?hours=${hours}&granularity=${granularity}&refresh=${forceRefresh}`
       );
       if (!res.ok) {
         setError(`API returned ${res.status}`);
@@ -182,11 +181,7 @@ export default function LLMMonitoringPage() {
 
   useEffect(() => {
     fetchData();
-    if (autoRefresh) {
-      const interval = setInterval(fetchData, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [fetchData, autoRefresh]);
+  }, [fetchData]);
 
   const totals = useMemo(() => {
     if (!data?.totals_by_model?.length)
@@ -328,15 +323,8 @@ export default function LLMMonitoringPage() {
           </Select>
           <Button
             variant="outline"
-            size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
-            {autoRefresh ? "Pause" : "Resume"}
-          </Button>
-          <Button
-            variant="outline"
             size="icon"
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             disabled={loading}
           >
             {loading ? (
@@ -357,7 +345,7 @@ export default function LLMMonitoringPage() {
               <p className="text-sm font-medium text-destructive">{error}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {error?.includes("429") || error?.toLowerCase().includes("rate limit")
-                  ? "Langfuse rate limit hit. Wait a minute and refresh."
+                  ? "Langfuse Metrics API daily limit (100–2000 req/day). Resets midnight UTC. Data cached 8h."
                   : error?.includes("401")
                     ? `401 = host/region mismatch. LANGFUSE_HOST must match your project: EU → https://cloud.langfuse.com, US → https://us.cloud.langfuse.com. Current: ${data?.langfuse_host ?? "—"}`
                     : "Keys go in the backend .env (project root). Restart FastAPI after changes."}
