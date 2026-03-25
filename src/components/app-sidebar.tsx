@@ -20,6 +20,7 @@ import {
   Cpu,
   Brain,
   Bell,
+  Radio,
 } from "lucide-react";
 import {
   Sidebar,
@@ -70,6 +71,7 @@ const navGroups = [
       { title: "Debug Chat", href: "/chat", icon: MessageSquare },
       { title: "Pinecone Explorer", href: "/pinecone", icon: Database },
       { title: "Script Runner", href: "/scripts", icon: Terminal },
+      { title: "Realtime Q Detection", href: "/realtime-question-test", icon: Radio },
     ],
   },
 ];
