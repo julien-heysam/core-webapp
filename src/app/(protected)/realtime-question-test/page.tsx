@@ -108,10 +108,12 @@ export default function RealtimeQuestionTestPage() {
           let matchedTriggeredAt = triggeredAt;
 
           if (updated.size > 0) {
-            const [firstKey, firstVal] = updated.entries().next().value;
-            matchedTaskId = firstKey;
-            matchedTriggeredAt = firstVal.triggeredAt;
-            updated.delete(firstKey);
+            const entry = updated.entries().next().value as [string, { triggeredAt: string; taskId: string }] | undefined;
+            if (entry) {
+              matchedTaskId = entry[0];
+              matchedTriggeredAt = entry[1].triggeredAt;
+              updated.delete(entry[0]);
+            }
           }
 
           const latencyMs = now - new Date(matchedTriggeredAt).getTime();
