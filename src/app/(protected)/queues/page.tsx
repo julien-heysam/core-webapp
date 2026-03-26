@@ -31,8 +31,27 @@ export default function QueuesPage() {
   const fetchQueues = useCallback(async () => {
     try {
       const res = await fetch("/api/proxy/admin/queues");
-      const json = await res.json();
-      setData(json);
+      let json: unknown;
+      try {
+        json = await res.json();
+      } catch {
+        setData({
+          queues: [],
+          connected: false,
+          error: res.ok ? "Invalid response" : `HTTP ${res.status}`,
+        });
+        return;
+      }
+      const body = json && typeof json === "object" ? (json as Record<string, unknown>) : {};
+      const queues = Array.isArray(body.queues) ? (body.queues as QueueInfo[]) : [];
+      const connected = typeof body.connected === "boolean" ? body.connected : false;
+      const error =
+        typeof body.error === "string"
+          ? body.error
+          : !res.ok
+            ? `HTTP ${res.status}`
+            : undefined;
+      setData({ queues, connected, error });
     } catch {
       setData({ queues: [], connected: false, error: "Failed to fetch" });
     } finally {
@@ -108,7 +127,7 @@ export default function QueuesPage() {
             </CardContent>
           </Card>
         )}
-        {data && data.queues.length === 0 && (
+        {data && (data.queues?.length ?? 0) === 0 && (
           <Card className="col-span-full">
             <CardContent className="flex items-center justify-center py-8 text-muted-foreground">
               No queue data available. Make sure Redis is running.
