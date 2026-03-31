@@ -54,6 +54,7 @@ const navGroups = [
       { title: "Celery Workers", href: "/monitoring/celery", icon: Cpu },
       { title: "LLM Performance", href: "/monitoring/llm", icon: Brain },
       { title: "Alerts", href: "/monitoring/alerts", icon: Bell },
+      { title: "Live Calls", href: "/live", icon: Radio },
     ],
   },
   {

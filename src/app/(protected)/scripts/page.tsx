@@ -125,6 +125,18 @@ const SCRIPTS: ScriptDef[] = [
       { name: "skip_processing", label: "Skip Post-Processing", type: "boolean", default: false },
     ],
   },
+  {
+    id: "send_meeting_prep_email",
+    name: "Send Meeting Prep Email",
+    file: "send_meeting_prep_email.py",
+    description: "Send pre-meeting prep email briefs for tomorrow's bots — for a specific org, specific bot, or all orgs",
+    params: [
+      { name: "org_id", label: "Org ID (optional)", type: "string", placeholder: "heysam" },
+      { name: "bot_id", label: "Bot ID (optional)", type: "string", placeholder: "uuid — skips Recall lookup" },
+      { name: "dry_run", label: "Dry Run", type: "boolean", default: true },
+      { name: "limit", label: "Limit", type: "number", placeholder: "10" },
+    ],
+  },
 ];
 
 export default function ScriptsPage() {

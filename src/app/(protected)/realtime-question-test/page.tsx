@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Ably from "ably";
 import {
   Card,
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Radio, Zap, Trash2, Clock, CheckCircle2, Loader2, WifiOff } from "lucide-react";
+import { Radio, Zap, Trash2, Clock, CheckCircle2, Loader2, WifiOff, BarChart2 } from "lucide-react";
 
 interface QuestionEvent {
   id: string;
@@ -28,6 +28,44 @@ interface QuestionEvent {
 }
 
 type ConnectionStatus = "idle" | "connecting" | "connected" | "error";
+
+interface LatencyStats {
+  count: number;
+  min: number;
+  p50: number;
+  p75: number;
+  p95: number;
+  p99: number;
+  max: number;
+  mean: number;
+}
+
+function computeStats(latencies: number[]): LatencyStats | null {
+  if (latencies.length === 0) return null;
+  const sorted = [...latencies].sort((a, b) => a - b);
+  const pct = (p: number) => {
+    const idx = (p / 100) * (sorted.length - 1);
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    return sorted[lo] + (idx - lo) * (sorted[hi] - sorted[lo]);
+  };
+  return {
+    count: sorted.length,
+    min: sorted[0],
+    p50: pct(50),
+    p75: pct(75),
+    p95: pct(95),
+    p99: pct(99),
+    max: sorted[sorted.length - 1],
+    mean: sorted.reduce((a, b) => a + b, 0) / sorted.length,
+  };
+}
+
+function latencyColor(ms: number): string {
+  if (ms < 5000) return "text-green-500";
+  if (ms < 15000) return "text-yellow-500";
+  return "text-red-500";
+}
 
 function LatencyBadge({ ms }: { ms: number }) {
   if (ms < 5000) {
@@ -187,6 +225,7 @@ export default function RealtimeQuestionTestPage() {
   }
 
   const pendingCount = pendingTriggers.size;
+  const stats = useMemo(() => computeStats(events.map((e) => e.latencyMs)), [events]);
 
   return (
     <div className="space-y-6">
@@ -302,6 +341,51 @@ export default function RealtimeQuestionTestPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Latency Stats Panel */}
+      {stats && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="h-5 w-5" />
+              Latency Statistics
+            </CardTitle>
+            <CardDescription>
+              Client-observed latency from trigger dispatch to Ably receipt — {stats.count} sample{stats.count !== 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
+              {(
+                [
+                  { label: "Min", value: stats.min },
+                  { label: "p50", value: stats.p50 },
+                  { label: "p75", value: stats.p75 },
+                  { label: "p95", value: stats.p95 },
+                  { label: "p99", value: stats.p99 },
+                  { label: "Max", value: stats.max },
+                  { label: "Mean", value: stats.mean },
+                  { label: "Count", value: null, raw: stats.count },
+                ] as { label: string; value: number | null; raw?: number }[]
+              ).map(({ label, value, raw }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center rounded-lg border bg-muted/40 px-2 py-3 gap-1"
+                >
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</span>
+                  {value !== null ? (
+                    <span className={`text-lg font-bold tabular-nums ${latencyColor(value)}`}>
+                      {(value / 1000).toFixed(2)}s
+                    </span>
+                  ) : (
+                    <span className="text-lg font-bold tabular-nums">{raw}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Event Feed */}
       <Card>
