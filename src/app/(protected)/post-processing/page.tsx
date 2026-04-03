@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, RotateCcw, Copy, Search } from "lucide-react";
+import { CheckCircle2, XCircle, RotateCcw, Copy, Search, ListTodo } from "lucide-react";
 
 const ALL_TASKS = [
   "MeetingTranscription",
@@ -105,7 +105,7 @@ export default function PostProcessingPage() {
     }
   }
 
-  async function handleRerunSelected() {
+  async function handleRecoverMissing() {
     setReprocessing(true);
     try {
       const res = await fetch(
@@ -126,6 +126,50 @@ export default function PostProcessingPage() {
       }
     } catch {
       toast.error("Failed to trigger recovery");
+    } finally {
+      setReprocessing(false);
+    }
+  }
+
+  async function handleRerunSelected() {
+    if (selectedTasks.size === 0) {
+      toast.error("Select at least one task");
+      return;
+    }
+    setReprocessing(true);
+    try {
+      const res = await fetch(
+        `/api/proxy/admin/bots/${botId.trim()}/run-missing-tasks`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_names: Array.from(selectedTasks),
+          }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        if (data.status === "nothing_runnable") {
+          toast.warning(
+            data.skipped_tasks?.length
+              ? `None of the selected tasks can be rerun via recovery (skipped: ${data.skipped_tasks.join(", ")}). Use full pipeline for transcription and other tasks.`
+              : (data.message as string)
+          );
+        } else {
+          const skipped =
+            data.skipped_tasks?.length > 0
+              ? ` (skipped — no worker: ${data.skipped_tasks.join(", ")})`
+              : "";
+          toast.success(
+            `Dispatched ${data.total_dispatched ?? data.dispatched_tasks?.length ?? 0} task(s): ${(data.dispatched_tasks ?? []).join(", ")}${skipped}`
+          );
+        }
+      } else {
+        toast.error(data.detail || "Rerun failed");
+      }
+    } catch {
+      toast.error("Failed to rerun selected tasks");
     } finally {
       setReprocessing(false);
     }
@@ -203,7 +247,8 @@ export default function PostProcessingPage() {
                     Task Status ({completedCount}/{tasks.length})
                   </CardTitle>
                   <CardDescription>
-                    Check tasks to include in selective rerun
+                    Check tasks, then use &quot;Rerun selected tasks&quot; to redo them (including completed).
+                    Use &quot;Recover missing tasks&quot; to auto-run only what is still incomplete.
                   </CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -286,7 +331,15 @@ export default function PostProcessingPage() {
                 disabled={reprocessing || selectedTasks.size === 0}
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Recover Missing Tasks
+                Rerun selected tasks
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleRecoverMissing}
+                disabled={reprocessing}
+              >
+                <ListTodo className="mr-2 h-4 w-4" />
+                Recover missing tasks
               </Button>
               <Button
                 variant="outline"
