@@ -26,6 +26,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { JsonViewer } from "@/components/json-viewer";
 import {
@@ -84,6 +86,9 @@ export default function RedisStoragePage() {
   const [viewLoading, setViewLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteAllLoading, setDeleteAllLoading] = useState(false);
+  const [deleteAllStarAck, setDeleteAllStarAck] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const fetchKeys = useCallback(async (pat: string, lim: number) => {
@@ -148,6 +153,39 @@ export default function RedisStoragePage() {
       toast.error(`Failed to delete key: ${err}`);
     } finally {
       setDeleteLoading(false);
+    }
+  }
+
+  async function handleDeleteAllByPattern() {
+    setDeleteAllLoading(true);
+    try {
+      const params = new URLSearchParams({ pattern });
+      if (pattern === "*") {
+        params.set("confirm_delete_all", "true");
+      }
+      const res = await fetch(`/api/proxy/redis_monitor/api/redis/keys?${params}`, {
+        method: "DELETE",
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(
+          typeof body.detail === "string"
+            ? body.detail
+            : Array.isArray(body.detail)
+              ? body.detail.map((d: { msg?: string }) => d.msg).join(", ")
+              : `Failed to delete keys`
+        );
+        return;
+      }
+      toast.success(body.message ?? `Deleted ${body.deleted ?? 0} key(s)`);
+      setDeleteAllOpen(false);
+      setDeleteAllStarAck(false);
+      setSelectedKey(null);
+      await fetchKeys(pattern, limit);
+    } catch (err) {
+      toast.error(`Failed to delete keys: ${err}`);
+    } finally {
+      setDeleteAllLoading(false);
     }
   }
 
@@ -245,6 +283,23 @@ export default function RedisStoragePage() {
             <Button onClick={handleSearch} disabled={loading}>
               <Search className="mr-2 h-4 w-4" />
               Search
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                setDeleteAllStarAck(false);
+                setDeleteAllOpen(true);
+              }}
+              disabled={loading || keys.length === 0}
+              title={
+                keys.length === 0
+                  ? "No keys match this pattern"
+                  : "Delete every Redis key matching the current pattern (full scan, not only rows shown)"
+              }
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete all
             </Button>
           </div>
         </CardContent>
@@ -375,6 +430,64 @@ export default function RedisStoragePage() {
               </div>
             </ScrollArea>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete all matching pattern */}
+      <Dialog
+        open={deleteAllOpen}
+        onOpenChange={(open) => {
+          setDeleteAllOpen(open);
+          if (!open) setDeleteAllStarAck(false);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete all matching keys
+            </DialogTitle>
+            <DialogDescription>
+              This removes every key in Redis that matches the current search pattern (including keys beyond the
+              browse limit). This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm">
+              Pattern:{" "}
+              <code className="font-mono text-xs bg-muted rounded px-1.5 py-0.5">{pattern}</code>
+            </p>
+            {pattern === "*" ? (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/5 p-3">
+                <Checkbox
+                  id="delete-all-star"
+                  checked={deleteAllStarAck}
+                  onCheckedChange={(v) => setDeleteAllStarAck(v === true)}
+                />
+                <Label htmlFor="delete-all-star" className="text-sm font-normal leading-snug cursor-pointer">
+                  I understand this deletes every key in this Redis database.
+                </Label>
+              </div>
+            ) : null}
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteAllOpen(false)}
+              disabled={deleteAllLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => void handleDeleteAllByPattern()}
+              disabled={
+                deleteAllLoading || (pattern === "*" && !deleteAllStarAck)
+              }
+            >
+              {deleteAllLoading ? "Deleting…" : "Delete all matching"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

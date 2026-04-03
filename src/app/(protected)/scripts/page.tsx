@@ -125,6 +125,51 @@ const SCRIPTS: ScriptDef[] = [
       { name: "skip_processing", label: "Skip Post-Processing", type: "boolean", default: false },
     ],
   },
+  {
+    id: "send_meeting_prep_email",
+    name: "Send Meeting Prep Email",
+    file: "send_meeting_prep_email.py",
+    description: "Send pre-meeting prep email briefs for tomorrow's bots — for a specific org, specific bot, or all orgs",
+    params: [
+      { name: "org_id", label: "Org ID (optional)", type: "string", placeholder: "heysam" },
+      { name: "bot_id", label: "Bot ID (optional)", type: "string", placeholder: "uuid — skips Recall lookup" },
+      { name: "dry_run", label: "Dry Run", type: "boolean", default: true },
+      { name: "limit", label: "Limit", type: "number", placeholder: "10" },
+    ],
+  },
+  {
+    id: "run_missing_tasks_bots_of_day",
+    name: "Run Missing Tasks (Bots of Day)",
+    file: "run_missing_tasks_bots_of_day.py",
+    description:
+      "For bots whose join_at falls on a UTC calendar day (default: today), run missing v2 tasks in-process (no Redis/Celery). Scope with Org ID; use Dry run first. Optional: enqueue via Celery instead.",
+    params: [
+      { name: "org_id", label: "Org ID (optional)", type: "string", placeholder: "evinced" },
+      {
+        name: "date",
+        label: "UTC date YYYY-MM-DD (optional)",
+        type: "string",
+        placeholder: "2026-04-03",
+      },
+      { name: "dry_run", label: "Dry run (list missing tasks only)", type: "boolean", default: true },
+      { name: "celery", label: "Enqueue via Celery (requires broker)", type: "boolean", default: false },
+      {
+        name: "simulation",
+        label: "Simulation — no DB writes (direct mode only)",
+        type: "boolean",
+        default: false,
+      },
+      { name: "limit", label: "Max bots", type: "number", placeholder: "20" },
+      { name: "fail_fast", label: "Stop on first error", type: "boolean", default: false },
+      {
+        name: "include_without_transcription",
+        label: "Include bots with no transcription rows",
+        type: "boolean",
+        default: false,
+      },
+      { name: "verbose", label: "Verbose logs", type: "boolean", default: false },
+    ],
+  },
 ];
 
 export default function ScriptsPage() {
