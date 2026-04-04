@@ -195,10 +195,10 @@ export default function PostProcessingPage() {
     }
   }
 
-  function toggleTask(name: string) {
+  function setTaskSelected(name: string, checked: boolean) {
     const next = new Set(selectedTasks);
-    if (next.has(name)) next.delete(name);
-    else next.add(name);
+    if (checked) next.add(name);
+    else next.delete(name);
     setSelectedTasks(next);
   }
 
@@ -289,7 +289,9 @@ export default function PostProcessingPage() {
                   >
                     <Checkbox
                       checked={selectedTasks.has(task.name)}
-                      onCheckedChange={() => toggleTask(task.name)}
+                      onCheckedChange={(checked) =>
+                        setTaskSelected(task.name, checked === true)
+                      }
                     />
                     {task.completed ? (
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
