@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession, COOKIE_NAME } from "@/lib/auth";
+import { COOKIE_NAME, verifySession } from "@/lib/auth-jwt";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
