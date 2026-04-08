@@ -21,6 +21,7 @@ import {
   Brain,
   Bell,
   Radio,
+  Gauge,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,6 +56,7 @@ const navGroups = [
       { title: "LLM Performance", href: "/monitoring/llm", icon: Brain },
       { title: "Alerts", href: "/monitoring/alerts", icon: Bell },
       { title: "Live Calls", href: "/live", icon: Radio },
+      { title: "Live Q Pipeline", href: "/monitoring/live-question-pipeline", icon: Gauge },
     ],
   },
   {
