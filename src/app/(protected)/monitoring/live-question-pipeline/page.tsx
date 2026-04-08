@@ -167,6 +167,16 @@ function ms(val: number | null | undefined): string {
   return `${Math.round(val)}ms`;
 }
 
+/** Recharts Tooltip values are typed as number | string | … — normalize for `ms`. */
+function msFromTooltipValue(v: unknown): string {
+  if (typeof v === "number" && Number.isFinite(v)) return ms(v);
+  if (typeof v === "string") {
+    const n = Number(v);
+    if (Number.isFinite(n)) return ms(n);
+  }
+  return ms(undefined);
+}
+
 function latencyColor(val: number | null | undefined): string {
   if (val == null) return "text-muted-foreground";
   if (val < 5000) return "text-emerald-400";
@@ -547,10 +557,13 @@ export default function LiveQuestionPipelinePage() {
                     />
                     <Tooltip
                       contentStyle={TOOLTIP_STYLE}
-                      formatter={(v: number, name: string) => [
-                        ms(v),
-                        STAGE_LABELS[name] ?? name,
-                      ]}
+                      formatter={(v, name) => {
+                        const key = name != null ? String(name) : "";
+                        return [
+                          msFromTooltipValue(v),
+                          STAGE_LABELS[key] ?? key,
+                        ];
+                      }}
                     />
                     <Legend
                       formatter={(v) => STAGE_LABELS[v] ?? v}
